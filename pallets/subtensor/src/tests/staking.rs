@@ -5229,6 +5229,164 @@ fn test_default_min_stake_sufficiency() {
     });
 }
 
+/// This test verifies if the remove stake + pay fees is working
+/// cargo test --package pallet-subtensor --lib -- tests::staking::test_remove_stake_payable_is_ok --exact --show-output
+#[test]
+fn test_remove_stake_payable_is_ok() {
+    new_test_ext(1).execute_with(|| {
+        let subnet_owner_coldkey = U256::from(1);
+        let subnet_owner_hotkey = U256::from(2);
+        let app_coldkey = U256::from(5);
+        let amount_fees = 100_000;
+        let coldkey_account_id = U256::from(4343);
+        let hotkey_account_id = U256::from(4968585);
+        let amount = DefaultMinStake::<Test>::get() * 10.into();
+        let netuid = add_dynamic_network(&subnet_owner_hotkey, &subnet_owner_coldkey);
+        register_ok_neuron(netuid, hotkey_account_id, coldkey_account_id, 192213123);
+
+        // Some basic assertions
+        assert_eq!(
+            SubtensorModule::get_total_stake(),
+            SubtensorModule::get_network_min_lock()
+        );
+        assert_eq!(
+            SubtensorModule::get_total_stake_for_hotkey(&hotkey_account_id),
+            TaoCurrency::ZERO
+        );
+        // Adding some funds to cover fees
+        SubtensorModule::add_balance_to_coldkey_account(&coldkey_account_id, amount_fees);
+        assert_eq!(
+            SubtensorModule::get_coldkey_balance(&coldkey_account_id),
+            amount_fees
+        );
+
+        // Give the neuron some stake to remove
+        SubtensorModule::increase_stake_for_hotkey_and_coldkey_on_subnet(
+            &hotkey_account_id,
+            &coldkey_account_id,
+            netuid,
+            amount.to_u64().into(),
+        );
+        assert_abs_diff_eq!(
+            SubtensorModule::get_total_stake_for_hotkey(&hotkey_account_id),
+            amount,
+            epsilon = amount / 1000.into()
+        );
+
+        // Add subnet TAO for the equivalent amount added at price
+        let (amount_tao, fee) = mock::swap_alpha_to_tao(netuid, amount.to_u64().into());
+        SubnetTAO::<Test>::mutate(netuid, |v| *v += amount_tao + fee.into());
+        TotalStake::<Test>::mutate(|v| *v += amount_tao + fee.into());
+
+        assert_ok!(SubtensorModule::remove_stake_payable(
+            RuntimeOrigin::signed(coldkey_account_id),
+            hotkey_account_id,
+            netuid,
+            amount.to_u64().into(),
+            app_coldkey,
+            amount_fees.into()
+        ));
+
+        // we do not expect the exact amount due to slippage
+        assert!(
+            SubtensorModule::get_coldkey_balance(&coldkey_account_id)
+                > amount.to_u64() / 10 * 9 - fee
+        );
+        assert_abs_diff_eq!(
+            SubtensorModule::get_total_stake_for_hotkey(&hotkey_account_id),
+            TaoCurrency::ZERO,
+            epsilon = 20000.into()
+        );
+        assert_abs_diff_eq!(
+            SubtensorModule::get_total_stake(),
+            SubtensorModule::get_network_min_lock() + fee.into(),
+            epsilon = SubtensorModule::get_total_stake() / 100_000.into()
+        );
+
+        // Let's check events emmited correctly
+        let events = System::events();
+
+        assert!(
+            events.iter().any(|e| matches!(
+                &e.event,
+                RuntimeEvent::SubtensorModule(Event::FeesTransferred(from, to, amount))
+                    if from == &coldkey_account_id
+                    && to == &app_coldkey
+                    && *amount == amount_fees.into()
+            )),
+            "FeesTransferred event should be emitted"
+        );
+
+        assert!(
+            events.iter().any(|e| matches!(
+                &e.event,
+                RuntimeEvent::SubtensorModule(Event::StakeRemoved(coldkey, hotkey, ..))
+                    if coldkey == &coldkey_account_id
+                    && hotkey == &hotkey_account_id
+            )),
+            "StakeRemoved event should be emitted"
+        );
+    });
+}
+
+/// This test verifies if the remove stake + pay fees is working
+/// cargo test --package pallet-subtensor --lib -- tests::staking::test_remove_stake_payable_not_enough_balance_for_fees --exact --show-output
+#[test]
+fn test_remove_stake_payable_not_enough_balance_for_fees() {
+    new_test_ext(1).execute_with(|| {
+        let subnet_owner_coldkey = U256::from(1);
+        let subnet_owner_hotkey = U256::from(2);
+        let app_coldkey = U256::from(5);
+        let amount_fees = 100_000;
+        let coldkey_account_id = U256::from(4343);
+        let hotkey_account_id = U256::from(4968585);
+        let amount = DefaultMinStake::<Test>::get() * 10.into();
+        let netuid = add_dynamic_network(&subnet_owner_hotkey, &subnet_owner_coldkey);
+        register_ok_neuron(netuid, hotkey_account_id, coldkey_account_id, 192213123);
+
+        // Some basic assertions
+        assert_eq!(
+            SubtensorModule::get_total_stake(),
+            SubtensorModule::get_network_min_lock()
+        );
+        assert_eq!(
+            SubtensorModule::get_total_stake_for_hotkey(&hotkey_account_id),
+            TaoCurrency::ZERO
+        );
+        assert_eq!(SubtensorModule::get_coldkey_balance(&coldkey_account_id), 0);
+
+        // Give the neuron some stake to remove
+        SubtensorModule::increase_stake_for_hotkey_and_coldkey_on_subnet(
+            &hotkey_account_id,
+            &coldkey_account_id,
+            netuid,
+            amount.to_u64().into(),
+        );
+        assert_abs_diff_eq!(
+            SubtensorModule::get_total_stake_for_hotkey(&hotkey_account_id),
+            amount,
+            epsilon = amount / 1000.into()
+        );
+
+        // Add subnet TAO for the equivalent amount added at price
+        let (amount_tao, fee) = mock::swap_alpha_to_tao(netuid, amount.to_u64().into());
+        SubnetTAO::<Test>::mutate(netuid, |v| *v += amount_tao + fee.into());
+        TotalStake::<Test>::mutate(|v| *v += amount_tao + fee.into());
+
+        assert_err!(
+            SubtensorModule::remove_stake_payable(
+                RuntimeOrigin::signed(coldkey_account_id),
+                hotkey_account_id,
+                netuid,
+                amount.to_u64().into(),
+                app_coldkey,
+                amount_fees.into()
+            ),
+            Error::<Test>::BalanceWithdrawalError
+        );
+    });
+}
+
 /// This test verifies if the stake + pay fees is working
 ///
 /// cargo test --package pallet-subtensor --lib -- tests::staking::test_add_stake_payable_is_ok --exact --show-output

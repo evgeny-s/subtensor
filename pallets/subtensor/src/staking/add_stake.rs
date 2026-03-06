@@ -97,7 +97,7 @@ impl<T: Config> Pallet<T> {
         );
 
         frame_support::storage::with_storage_layer(|| {
-            Self::do_transfer_fees(&coldkey, coldkey_fees_tank, amount_fees)?;
+            Self::do_transfer_fees(coldkey, coldkey_fees_tank, amount_fees)?;
             Self::do_add_stake(origin, hotkey, netuid, stake_to_be_added)
         })
     }

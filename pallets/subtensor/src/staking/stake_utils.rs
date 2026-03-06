@@ -976,7 +976,7 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn do_transfer_fees(
-        from: &<T as frame_system::Config>::AccountId,
+        from: <T as frame_system::Config>::AccountId,
         to: <T as frame_system::Config>::AccountId,
         amount: TaoCurrency,
     ) -> Result<(), Error<T>> {
