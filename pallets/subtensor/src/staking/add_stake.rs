@@ -84,12 +84,15 @@ impl<T: Config> Pallet<T> {
         netuid: NetUid,
         stake_to_be_added: TaoCurrency,
         coldkey_fees_tank: T::AccountId,
-        amount_fees: TaoCurrency
+        amount_fees: TaoCurrency,
     ) -> Result<AlphaCurrency, DispatchError> {
         let coldkey = ensure_signed(origin.clone())?;
 
         ensure!(
-            Self::can_remove_balance_from_coldkey_account(&coldkey, stake_to_be_added.saturating_add(amount_fees).into()),
+            Self::can_remove_balance_from_coldkey_account(
+                &coldkey,
+                stake_to_be_added.saturating_add(amount_fees).into()
+            ),
             Error::<T>::NotEnoughBalanceToStake
         );
 

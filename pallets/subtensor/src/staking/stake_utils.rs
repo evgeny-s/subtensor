@@ -1,7 +1,5 @@
 use super::*;
-use frame_support::{
-    traits::{fungible::*, tokens::Preservation},
-};
+use frame_support::traits::{fungible::*, tokens::Preservation};
 use safe_math::*;
 use share_pool::{SharePool, SharePoolDataOperations};
 use sp_std::ops::Neg;
@@ -982,18 +980,10 @@ impl<T: Config> Pallet<T> {
         to: <T as frame_system::Config>::AccountId,
         amount: TaoCurrency,
     ) -> Result<(), Error<T>> {
-        <T as Config>::Currency::transfer(
-            &from,
-            &to,
-            amount.into(),
-            Preservation::Expendable,
-        ).map_err(|_| Error::<T>::BalanceWithdrawalError)?;
+        <T as Config>::Currency::transfer(&from, &to, amount.into(), Preservation::Expendable)
+            .map_err(|_| Error::<T>::BalanceWithdrawalError)?;
 
-        Self::deposit_event(Event::FeesTransferred(
-            from.clone(),
-            to.clone(),
-            amount,
-        ));
+        Self::deposit_event(Event::FeesTransferred(from.clone(), to.clone(), amount));
 
         Ok(())
     }
