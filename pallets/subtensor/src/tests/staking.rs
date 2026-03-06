@@ -5382,7 +5382,7 @@ fn test_remove_stake_payable_not_enough_balance_for_fees() {
                 app_coldkey,
                 amount_fees.into()
             ),
-            Error::<Test>::BalanceWithdrawalError
+            Error::<Test>::NotEnoughBalanceToPayFees
         );
     });
 }

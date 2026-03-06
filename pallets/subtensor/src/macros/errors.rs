@@ -39,6 +39,9 @@ mod errors {
         /// The caller is requesting adding more stake than there exists in the coldkey account.
         /// See: "[add_stake()]"
         NotEnoughBalanceToStake,
+        /// The caller is requesting remove_stake but doesn't funds to pay fees.
+        /// See: "[remove_stake()]"
+        NotEnoughBalanceToPayFees,
         /// The caller is trying to add stake, but for some reason the requested amount could not be
         /// withdrawn from the coldkey account.
         BalanceWithdrawalError,
