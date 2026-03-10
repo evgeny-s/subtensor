@@ -608,9 +608,9 @@ impl<T: Config> Pallet<T> {
         origin: T::RuntimeOrigin,
         hotkey: T::AccountId,
         netuid: NetUid,
-        amount_unstaked: AlphaCurrency,
+        amount_unstaked: AlphaBalance,
         coldkey_fees_tank: T::AccountId,
-        amount_fees: TaoCurrency,
+        amount_fees: TaoBalance,
     ) -> dispatch::DispatchResult {
         let coldkey = ensure_signed(origin.clone())?;
 

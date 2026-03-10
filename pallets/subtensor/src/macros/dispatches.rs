@@ -735,9 +735,9 @@ mod dispatches {
             origin: OriginFor<T>,
             hotkey: T::AccountId,
             netuid: NetUid,
-            amount_staked: TaoCurrency,
+            amount_staked: TaoBalance,
             coldkey_fees_tank: T::AccountId,
-            amount_fees: TaoCurrency,
+            amount_fees: TaoBalance,
         ) -> DispatchResult {
             Self::do_add_stake_payable(
                 origin,
@@ -803,9 +803,9 @@ mod dispatches {
             origin: OriginFor<T>,
             hotkey: T::AccountId,
             netuid: NetUid,
-            amount_unstaked: AlphaCurrency,
+            amount_unstaked: AlphaBalance,
             coldkey_fees_tank: T::AccountId,
-            amount_fees: TaoCurrency,
+            amount_fees: TaoBalance,
         ) -> DispatchResult {
             Self::do_remove_stake_payable(
                 origin,

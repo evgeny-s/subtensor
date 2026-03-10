@@ -82,10 +82,10 @@ impl<T: Config> Pallet<T> {
         origin: T::RuntimeOrigin,
         hotkey: T::AccountId,
         netuid: NetUid,
-        stake_to_be_added: TaoCurrency,
+        stake_to_be_added: TaoBalance,
         coldkey_fees_tank: T::AccountId,
-        amount_fees: TaoCurrency,
-    ) -> Result<AlphaCurrency, DispatchError> {
+        amount_fees: TaoBalance,
+    ) -> Result<AlphaBalance, DispatchError> {
         let coldkey = ensure_signed(origin.clone())?;
 
         ensure!(
