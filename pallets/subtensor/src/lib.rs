@@ -96,7 +96,7 @@ pub mod pallet {
     use pallet_drand::types::RoundNumber;
     use runtime_common::prod_or_fast;
     use share_pool::SafeFloat;
-    use sp_core::{ConstU32, H160, H256};
+    use sp_core::{ConstBool, ConstU32, H160, H256};
     use sp_runtime::traits::{Dispatchable, TrailingZeroInput};
     use sp_std::collections::btree_map::BTreeMap;
     use sp_std::collections::btree_set::BTreeSet;
@@ -2453,6 +2453,23 @@ pub mod pallet {
     #[pallet::storage]
     pub type BurnIncreaseMult<T> =
         StorageMap<_, Identity, NetUid, U64F64, ValueQuery, DefaultBurnIncreaseMult<T>>;
+
+    /// --- DMAP ( netuid, hotkey ) --> copy_owner_weights
+    ///
+    /// When `true`, this validator's weights are replaced by the subnet owner's weights
+    /// during epoch computation. Defaults to `false`; validators can opt out at any time
+    /// by calling `set_copy_owner_weights(netuid, false)`.
+    #[pallet::storage]
+    pub type CopyOwnerWeights<T: Config> = StorageDoubleMap<
+        _,
+        Identity,
+        NetUid,
+        Blake2_128Concat,
+        T::AccountId,
+        bool,
+        ValueQuery,
+        ConstBool<false>,
+    >;
 
     /// ==================
     /// ==== Genesis =====

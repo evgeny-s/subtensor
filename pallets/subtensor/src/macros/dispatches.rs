@@ -2506,5 +2506,39 @@ mod dispatches {
         ) -> DispatchResult {
             Self::do_register_limit(origin, netuid, hotkey, limit_price)
         }
+
+        /// --- Allows a validator to toggle whether their weights are automatically copied from the
+        /// subnet owner during epoch computation.
+        #[pallet::call_index(135)]
+        #[pallet::weight((
+            Weight::from_parts(21_000_000, 0)
+                .saturating_add(T::DbWeight::get().reads(3_u64))
+                .saturating_add(T::DbWeight::get().writes(1_u64)),
+            DispatchClass::Normal,
+            Pays::Yes
+        ))]
+        pub fn set_copy_owner_weights(
+            origin: OriginFor<T>,
+            netuid: NetUid,
+            enabled: bool,
+        ) -> DispatchResult {
+            let hotkey = ensure_signed(origin)?;
+
+            ensure!(Self::if_subnet_exist(netuid), Error::<T>::SubnetNotExists);
+
+            ensure!(
+                Self::is_hotkey_registered_on_network(netuid, &hotkey),
+                Error::<T>::HotKeyNotRegisteredInSubNet
+            );
+
+            CopyOwnerWeights::<T>::insert(netuid, &hotkey, enabled);
+
+            Self::deposit_event(Event::CopyOwnerWeightsSet {
+                netuid,
+                hotkey,
+                enabled,
+            });
+            Ok(())
+        }
     }
 }
