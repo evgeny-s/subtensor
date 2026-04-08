@@ -1093,28 +1093,6 @@ impl<T: Config> Pallet<T> {
                 }
             }
         }
-
-        // --- Copy-owner-weights: replace rows for validators that opted-in.
-        if let Some(owner_uid) = Self::get_owner_uid(netuid) {
-            if (owner_uid as usize) < n {
-                let owner_row: Vec<(u16, I32F32)> =
-                    weights.get(owner_uid as usize).cloned().unwrap_or_default();
-
-                for (uid_i, hotkey) in
-                    Keys::<T>::iter_prefix(netuid).filter(|(uid_i, _)| (*uid_i as usize) < n)
-                {
-                    if uid_i == owner_uid {
-                        continue;
-                    }
-                    if CopyOwnerWeights::<T>::get(netuid, &hotkey) {
-                        if let Some(row) = weights.get_mut(uid_i as usize) {
-                            row.clone_from(&owner_row);
-                        }
-                    }
-                }
-            }
-        }
-
         weights
     }
 

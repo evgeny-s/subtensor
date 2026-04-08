@@ -111,10 +111,6 @@ impl<T: Config> Pallet<T> {
             *total = total.saturating_sub(burned_alpha.into())
         });
 
-        if Self::is_subnet_new(netuid) {
-            CopyOwnerWeights::<T>::insert(netuid, &hotkey, true);
-        }
-
         // 9) register neuron
         let neuron_uid: u16 = Self::register_neuron(netuid, &hotkey)?;
 
@@ -130,11 +126,6 @@ impl<T: Config> Pallet<T> {
         Self::deposit_event(Event::NeuronRegistered(netuid, neuron_uid, hotkey));
 
         Ok(())
-    }
-
-    pub fn is_subnet_new(_: NetUid) -> bool {
-        // TODO: Consider subnet new during first N blocks
-        true
     }
 
     pub fn do_register_limit(

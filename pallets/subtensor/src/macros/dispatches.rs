@@ -2507,8 +2507,8 @@ mod dispatches {
             Self::do_register_limit(origin, netuid, hotkey, limit_price)
         }
 
-        /// --- Allows a validator to toggle whether their weights are automatically copied from the
-        /// subnet owner during epoch computation.
+        /// --- Allows a root validator to toggle auto parent delegation
+        /// for new subnets owner hotkey
         #[pallet::call_index(135)]
         #[pallet::weight((
             Weight::from_parts(21_000_000, 0)
@@ -2517,24 +2517,20 @@ mod dispatches {
             DispatchClass::Normal,
             Pays::Yes
         ))]
-        pub fn set_copy_owner_weights(
+        pub fn set_auto_parent_delegation_enabled(
             origin: OriginFor<T>,
-            netuid: NetUid,
             enabled: bool,
         ) -> DispatchResult {
             let hotkey = ensure_signed(origin)?;
 
-            ensure!(Self::if_subnet_exist(netuid), Error::<T>::SubnetNotExists);
-
             ensure!(
-                Self::is_hotkey_registered_on_network(netuid, &hotkey),
+                Self::is_hotkey_registered_on_network(NetUid::ROOT, &hotkey),
                 Error::<T>::HotKeyNotRegisteredInSubNet
             );
 
-            CopyOwnerWeights::<T>::insert(netuid, &hotkey, enabled);
+            AutoParentDelegationEnabled::<T>::insert(&hotkey, enabled);
 
-            Self::deposit_event(Event::CopyOwnerWeightsSet {
-                netuid,
+            Self::deposit_event(Event::AutoParentDelegationEnabledSet {
                 hotkey,
                 enabled,
             });

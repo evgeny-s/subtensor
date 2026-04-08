@@ -792,6 +792,14 @@ impl<T: Config> Pallet<T> {
         ChildkeyTake::<T>::get(hotkey, netuid)
     }
 
+    pub fn get_auto_parent_delegation_enabled(root_validator_hotkey: &T::AccountId) -> bool {
+        if !AutoParentDelegationEnabled::<T>::contains_key(root_validator_hotkey) {
+            return true; // default to true if not set
+        }
+
+        AutoParentDelegationEnabled::<T>::get(root_validator_hotkey)
+    }
+
     ////////////////////////////////////////////////////////////
     // State cleaners (for use in migration)
     // TODO: Deprecate when the state is clean for a while
@@ -829,6 +837,11 @@ impl<T: Config> Pallet<T> {
             // Skip if the root validator is the subnet owner hotkey itself
             // (cannot be both parent and child).
             if root_validator_hotkey == subnet_owner_hotkey {
+                continue;
+            }
+
+            // Skip if root validator disabled auto parent delegation via AutoParentDelegationEnabled flag
+            if !Self::get_auto_parent_delegation_enabled(&root_validator_hotkey) {
                 continue;
             }
 

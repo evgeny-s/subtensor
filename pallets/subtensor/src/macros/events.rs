@@ -563,17 +563,11 @@ mod events {
             burn_increase_mult: u64,
         },
 
-        /// A validator toggled the "copy owner weights" flag.
-        ///
-        /// - **netuid**: The subnet identifier.
-        /// - **hotkey**: The validator hotkey that changed the setting.
-        /// - **enabled**: The new value of the flag.
-        CopyOwnerWeightsSet {
-            /// The subnet identifier.
-            netuid: NetUid,
+        /// A root validator toggled the "auto parent delegation" flag.
+        AutoParentDelegationEnabledSet {
             /// The validator hotkey.
             hotkey: T::AccountId,
-            /// Whether copying is now enabled.
+            /// Whether delegation is now enabled.
             enabled: bool,
         },
     }
