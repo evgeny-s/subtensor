@@ -1094,7 +1094,9 @@ pub mod pallet {
 
     /// Default value for AutoParentDelegationEnabled.
     #[pallet::type_value]
-    pub fn DefaultAutoParentDelegationEnabled<T: Config>() -> bool { true }
+    pub fn DefaultAutoParentDelegationEnabled<T: Config>() -> bool {
+        true
+    }
 
     #[pallet::storage]
     pub type MinActivityCutoff<T: Config> =

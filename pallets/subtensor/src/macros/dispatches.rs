@@ -2530,10 +2530,7 @@ mod dispatches {
 
             AutoParentDelegationEnabled::<T>::insert(&hotkey, enabled);
 
-            Self::deposit_event(Event::AutoParentDelegationEnabledSet {
-                hotkey,
-                enabled,
-            });
+            Self::deposit_event(Event::AutoParentDelegationEnabledSet { hotkey, enabled });
             Ok(())
         }
     }
