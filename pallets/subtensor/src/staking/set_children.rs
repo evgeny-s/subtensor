@@ -793,10 +793,6 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn get_auto_parent_delegation_enabled(root_validator_hotkey: &T::AccountId) -> bool {
-        if !AutoParentDelegationEnabled::<T>::contains_key(root_validator_hotkey) {
-            return true; // default to true if not set
-        }
-
         AutoParentDelegationEnabled::<T>::get(root_validator_hotkey)
     }
 

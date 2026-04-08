@@ -1092,6 +1092,10 @@ pub mod pallet {
         10u16
     }
 
+    /// Default value for AutoParentDelegationEnabled.
+    #[pallet::type_value]
+    pub fn DefaultAutoParentDelegationEnabled<T: Config>() -> bool { true }
+
     #[pallet::storage]
     pub type MinActivityCutoff<T: Config> =
         StorageValue<_, u16, ValueQuery, DefaultMinActivityCutoff<T>>;
@@ -2466,6 +2470,7 @@ pub mod pallet {
         T::AccountId,
         bool,
         ValueQuery,
+        DefaultAutoParentDelegationEnabled<T>, // default = true
     >;
 
     /// ==================
